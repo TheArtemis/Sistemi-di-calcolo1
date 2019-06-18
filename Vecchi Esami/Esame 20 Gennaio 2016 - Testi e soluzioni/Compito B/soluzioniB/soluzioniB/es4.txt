@@ -1,0 +1,75 @@
+-------------------------------------------------------------------------------------
+1. Descrivere le ottimizzazioni applicate e dire perché si ritiene che siano efficaci. 
+Cercare di capire se c’è qualche risorsa che il programma usa male (suggerimento: cache). 
+Usare il buon senso!
+
+Riscriviamo la funzione in modo che calcoli lo stesso risultato effettuando una singola
+scansione sequenziale invece che scansioni ripetute in cui accessi consevutivi sono a 
+indirizzi distanti in memoria (stride*sizeof(int) byte). Questo riduce i cache miss.
+
+-------------------------------------------------------------------------------------
+2.	Riportare il tempo di esecuzione di es4 e di es4-opt usando il comando time.
+
+Compiliamo i programmi con:
+$ gcc -m32 -o es4 es4.c es4-main.c -O1
+$ gcc -m32 -o es4-opt es4-opt.c es4-main.c -O1
+
+time ./es4
+real 0m0.954s
+user 0m0.922s
+sys  0m0.032s
+
+time ./es4-opt
+real 0m0.515s
+user 0m0.475s
+sys  0m0.032s
+
+-------------------------------------------------------------------------------------
+3.	Riportare i flat profile delle due versioni usando gprof.
+
+Compiliamo le versioni auto-profilanti con:
+$ gcc -m32 -o es4-pg es4.c es4-main.c -O1 -pg
+$ gcc -m32 -o es4-opt-pg es4-opt.c es4-main.c -O1 -pg
+
+Eseguiamo e salviamo i profili:
+$ ./es4-pg
+$ gprof es4-pg > es4.txt
+$ ./es4-opt-pg
+$ gprof es4-opt-pg > es4-opt.txt
+
+es4.txt:
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 72.92      0.70     0.70        1   700.00   700.00  stat
+ 27.08      0.96     0.26        1   260.00   260.00  init
+  0.00      0.96     0.00        1     0.00     0.00  print_array
+
+es4-opt.txt:
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 52.00      0.26     0.26        1   260.00   260.00  init
+ 48.00      0.50     0.24        1   240.00   240.00  stat
+  0.00      0.50     0.00        1     0.00     0.00  print_array
+
+-------------------------------------------------------------------------------------
+4.	Di quante volte è più veloce l’eseguibile es4-opt rispetto a es4?
+
+0.95/0.51 ~ 1.86
+
+-------------------------------------------------------------------------------------
+5.	Usando i dati del profilo es4.txt, calcolare lo speedup che bisognerebbe ottenere 
+per la funzione stat (considerandone il tempo complessivo self+children) per ottenere 
+uno speedup totale per l'intero programma pari a 2x, se questo è possibile.
+
+La funzione stat complessivamente richiede circa il 73% del tempo di esecuzione.
+Applicando la legge di Amdahl ed uguagliandola a uno speedup 2 si ottiene:
+
+2 = 1/(a/k + 1-a) = 1/(0.73/k + 0.27)
+
+da cui ricaviamo k:
+
+0.73/k + 0.27 = 1/2
+
+0.73/k = 0.5 - 0.27 = 0.22
+
+k = 0.73/0.22 = 3.3x

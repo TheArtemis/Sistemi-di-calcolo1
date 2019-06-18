@@ -1,0 +1,86 @@
+-------------------------------------------------------------------------------------
+1.	Come è partizionato l'heap in blocchi liberi/in uso dopo ogni malloc/free?
+
+Un puntatore su una piattaforma a 64 bit occupa 8 byte.
+La struttura ha una dimensione pari a 16 byte (4 int + 4 padding + 8 nodo*).
+
+Mostriamo ogni operazione con la seguente convenzione grafica:
+= -> 4 byte in uso 
+. -> 4 byte liberi
+
+1) l = add(l, 10);
+
+|====|
+^
+l1
+
+2) l = add(l, 20);
+
+|====|====|
+^    ^
+l1   l2
+
+3) l = add(l, 30);
+
+|====|====|====|
+^    ^    ^
+l1   l2   l3
+
+4) p = add(p, l->info); 
+
+|====|====|====|====|
+^    ^    ^    ^
+l1   l2   l3   p1
+
+5) l = remove(l);
+
+|====|====|....|====|
+^    ^         ^
+l1   l2        p1
+
+6) p = add(p, l->info); 
+
+|====|====|====|====|
+^    ^    ^    ^
+l1   l2   p2   p1
+
+7) l = remove(l);
+
+|====|....|====|====|
+^         ^    ^
+l1        p2   p1
+
+8) p = add(p, l->info); 
+
+|====|====|====|====|
+^    ^    ^    ^
+l1   p3   p2   p1
+
+9) l = remove(l);
+
+|....|====|====|====|
+     ^    ^    ^
+     p3   p2   p1
+
+
+-------------------------------------------------------------------------------------
+2.	Si genera frammentazione durante l’allocazione? Se sì, di che tipo?
+
+Lo spazio è frammentato, ma non succede mai che una malloc non possa essere soddisfatta
+con spazio libero esistente. Il motivo è che i blocchi allocati sono tutti della stessa
+dimensione, quindi un vuoto lasciato dalla deallocazione di uno può essere sempre
+riutilizzato per mettercene un altro. Pertanto, tecnicamente non si ha mai frammentazione 
+esterna.
+
+Si ha invece una forma di frammentazione esterna indotta dall'utente dovuta al fatto
+che c'è padding nei blocchi allocati.
+
+-------------------------------------------------------------------------------------
+3.	Quanto è grande l'heap alla fine?
+
+4*16 = 64 byte.
+
+(Nota: un allocatore reale usa sempre dello spazio in più per consentire una rapida 
+identificazione dei blocchi liberi, ma nell'economia del corso si fa l'assunzione
+semplificativa che lo spazio occupato nell'heap sia solo quello richiesto dall'utente
+con malloc).

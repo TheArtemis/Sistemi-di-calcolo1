@@ -1,0 +1,47 @@
+-------------------------------------------------------------------------------------
+1. Supponiamo di avere uno spazio logico di 1 GB suddiviso in pagine di 256 KB. 
+Quanti byte occuperebbe una tabella delle pagine che dovesse indicizzare uno spazio 
+fisico di 4 GB? Per motivi di allineamento, assumere che le entry della tabella delle 
+pagine siano di dimensione multipla di 32 bit.
+
+Si ha: 
+- 1 GB = 2^30 byte
+- 4 GB = 2^32 byte
+- 256 KB = 256*2^10 = 2^18 byte
+
+Lo spazio logico è diviso in 2^30 / 2^18 = 2^12 pagine da 256 KB ciascuna.
+Lo spazio fisico è diviso in 2^32 / 2^18 = 2^14 pagine da 256 KB ciascuna.
+
+I numeri di frame sono nell'intervallo [0, 2^14-1], pertanto basterebbero 14 bit
+per rappresentarli. Tuttavia, per motivi di allineamento delle entry della tabella
+delle pagine, si preferisce usare entry di 32 bit = 4 byte.
+
+La tabella delle pagine occupa quindi 4*2^12 byte = 16*2^10 byte = 16 KB.
+
+-------------------------------------------------------------------------------------
+2. Si consideri un processo 1 che esegue la funzione produci, e un processo 2 che 
+successivamente esegue la funzione consuma. Vorremmo che il processo 2 stampasse la 
+stringa precedentemente scritta dal processo 1: questo può succedere in un sistema di 
+memoria virtuale paginato? Se sì, come?
+
+Si, e' possibile ed e' uno dei vantaggi dell'utilizzo di un sistema di memoria virtuale 
+paginato; occorre che due pagine dei due processi, una della tabella delle pagine del
+processo 1 e l'altra della tabella delle pagine del processo 2, siano mappate nelle
+loro rispettive tabelle delle pagine, alla stessa zona di memoria fisica.
+
+-------------------------------------------------------------------------------------
+3. Il seguente testo contiene vari errori: "In un sistema di memoria paginato, i processi 
+usano indirizzi nello spazio della memoria fisica, che è suddivista in frame. Un array 
+chiamato tabella delle pagine, globale a tutti i processi, permette di mappare gli indici 
+dei frame negli indici delle pagine corrispondenti. Uno dei vantaggio principali di un 
+sistema paginato è quello di risolvere completamente il problema della frammentazione 
+esterna nell'allocazione della memoria ai processi, facendo in modo che tutto lo spazio 
+allocato venga effettivamente utilizzato". Correggere gli errori scrivendo il testo 
+corretto.
+
+"In un sistema di memoria paginato, i processi usano indirizzi nello spazio della memoria 
+logica, che è suddivista in pagine. Un array chiamato tabella delle pagine, di cui ogni 
+processo ha la sua copia, permette di mappare gli indici delle pagine negli indici dei frame 
+corrispondenti. Uno dei vantaggio principali di un sistema paginato è quello di risolvere 
+completamente il problema della frammentazione esterna nell'allocazione della memoria ai 
+processi, a scapito di quella interna dato che i frame sono di dimensione fissa".

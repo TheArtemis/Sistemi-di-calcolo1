@@ -1,0 +1,31 @@
+-------------------------------------------------------------------------------------
+1. Quanti accessi a memoria vengono effettuati nei cicli da ciascuna versione?
+
+Entrambe le versioni eseguono n^2 = 1000000 accessi a memoria. L'unica differenza fra le 
+due versioni è che la prima non esibisce località spaziale, mentre la seconda sì.
+
+-------------------------------------------------------------------------------------
+2. Quanti cache miss vengono generati dai cicli nello scenario peggiore nelle due 
+versioni? Illustrare il procedimento usato per il calcolo.
+
+Scenario peggiore versione 1: dal momento che i cicli scorrono le colonne, avrò una 
+situazione in cui, quando passo da (n-1,0) a (0,1) il blocco che inizia a (0,0) 
+caricato a suo tempo non è più in cache, poiché la cache non ha tante linee quanto n. 
+Effettuo pertanto n^2 = 1000000 cache miss.
+
+Scenario peggiore versione 2: dal momento che scorro le righe ed esibisco località 
+spaziale, avrò al più n^2/8 = 1000*1000/8 = 125000 cache miss. Infatti, faccio un cache
+miss ogni 8 int acceduti, con sizeof(int)==4.
+
+-------------------------------------------------------------------------------------
+3. La dimensione della linea conta? E quella della cache?
+
+Versione 1: la dimensione della linea non conta poiché non viene esibita alcuna
+località spaziale. La dimensione della cache non conta, almeno fino a una certa soglia
+(se infatti avessi una cache completamente associativa di 32 KB, potrei tenere in 
+cache 1024 blocchi da 32 byte simultaneamente, e quindi un blocco per ogni riga della
+matrice).
+
+Versione 2: scorrendo per righe, la dimensione della linea conta, ma non il numero di
+linee della cache essendo tutti i cache miss di tipo cold.
+

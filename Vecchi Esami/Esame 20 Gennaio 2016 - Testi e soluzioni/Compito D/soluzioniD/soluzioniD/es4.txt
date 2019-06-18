@@ -1,0 +1,70 @@
+-------------------------------------------------------------------------------------
+1. Descrivere le ottimizzazioni applicate e dire perché si ritiene che siano efficaci.
+
+Le ottimizzazioni applicate sono:
+
+1) Loop Invariant Code Motion: distsqr(x[p], y[p], 0, 0) è stata portata fuori dal ciclo
+   in count. Dall'analisi del file es4.s l'ottimizzazione non è stata effettuata dal 
+   compilatore (vi sono 2 chiamate a distsqr per ogni iterazione nel ciclo .L4 ... jne .L4).
+   Infatti, dato che la funzione distsqr si trova in un altro file, il compilatore non 
+   puo' sapere se questa effettui side effect o meno, dunque non puo' effettuare 
+   ottimizzazioni che rischiano di modificare la semantica del codice.
+
+2) Common Subexpression Elimination: count(x, y, i, n) viene chiamata due volte e può
+   essere fattorizzata. L'ottimizzazione non può essere fatta in automatico dal 
+   compilatore (vi sono infatti 2 chiamate a count in count_max nel ciclo .L10 ... jne .L10) 
+   poiché count chiama a sua volta distsqr di cui come osservato sopra il
+   compilatore non può assumere che non faccia side-effect.
+   
+3) Function Inlining: la chiamata alla funzione distsqr viene eliminata rimpiazzandola
+   con il suo corpo. Questa ottimizzazione rende meno leggibile e modulare il programma
+   ed è consigliata solo se la funzione count_max è davvero critica per le prestazioni
+   del programma in cui viene usata.
+
+-------------------------------------------------------------------------------------
+2. Riportare il tempo di esecuzione di es4 e di es4-opt usando il comando time.
+
+es4:
+real	0m6.890s
+user	0m6.317s
+sys	    0m0.076s
+
+es4-opt:
+real	0m3.016s
+user	0m2.909s
+sys	    0m0.018s
+
+
+-------------------------------------------------------------------------------------
+3. Riportare i flat profile delle due versioni usando gprof.
+
+es4:
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 48.41      3.04     3.04 1000040000     0.00     0.00  distsqr
+ 48.17      6.08     3.03    25001     0.00     0.00  count
+  3.42      6.29     0.21        1     0.21     0.21  init
+  0.00      6.29     0.00        1     0.00     6.08  count_max
+  
+es4-opt:
+    %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 57.09      1.61     1.61    20000     0.00     0.00  count
+ 38.83      2.71     1.09 400020000     0.00     0.00  distsqr
+  4.08      2.82     0.12        1     0.12     0.12  init
+  0.00      2.82     0.00        1     0.00     2.71  count_max
+
+-------------------------------------------------------------------------------------
+4. Di quante volte è più veloce l’eseguibile es4-opt rispetto a es4?
+
+Lo speed up risulta essere pari a T/Topt = 6.890/3.016 = 2.284
+
+-------------------------------------------------------------------------------------
+5. Usando i dati del profilo es4.txt, calcolare lo speedup massimo che si può ottenere 
+ottimizzando la funzione count.
+
+Dal file es4.txt emerge che il tempo utilizzato dalla funzione count e le funzioni da essa chiamate
+e' il 96.6% del tempo totale (a = 0.966), allora per la legge di Amdahl lo speed up massimo 
+risulta essere:
+    
+lim k->+inf 1/(a/k + 1 - a) = 1/(1-a) = 1/(1-0.966) = 29.41x

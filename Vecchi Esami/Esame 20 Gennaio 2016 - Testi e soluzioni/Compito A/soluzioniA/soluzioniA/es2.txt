@@ -1,0 +1,83 @@
+-------------------------------------------------------------------------------------
+1. Come è partizionato l'heap in blocchi liberi/in uso dopo ogni malloc/free?
+
+Un puntatore su una piattaforma a 32 bit occupa 4 byte.
+La struttura ha una dimensione pari a 16 byte.
+
+Mostriamo ogni operazione con la seguente convenzione grafica:
+= -> 4 byte in uso 
+. -> 4 byte liberi
+
+1) punto** v = malloc(3*sizeof(punto*));
+
+|===|
+^
+v
+
+2) v[0] = malloc(sizeof(punto));
+
+|===|====|
+^   ^
+v   v[0]
+
+3) v[1] = malloc(sizeof(punto));
+
+|===|====|====|
+^   ^    ^
+v   v[0] v[1]
+
+4) v[2] = malloc(sizeof(punto));
+
+|===|====|====|====|
+^   ^    ^    ^
+v   v[0] v[1] v[2]
+
+5) punto* p = malloc(2*sizeof(punto));
+
+|===|====|====|====|========|
+^   ^    ^    ^    ^
+v   v[0] v[1] v[2] p
+
+6) free(v[0]); v[0] = p;
+
+|===|....|====|====|========|
+^        ^    ^    ^
+v        v[1] v[2] v[0]
+
+7) punto* p = malloc(2*sizeof(punto)); 
+
+|===|....|====|====|========|========| <-- qui non si riesce a riusare i 16 byte liberi
+^        ^    ^    ^        ^              ed è necessario ingrandire l'heap di 32 byte
+v        v[1] v[2] v[0]     p              (frammentazione esterna)
+
+8) free(v[1]); v[1] = p;
+
+|===|....|....|====|========|========|
+^             ^    ^        ^
+v             v[2] v[0]     v[1]
+
+9) punto* p = malloc(2*sizeof(punto));  
+
+|===|========|====|========|========|  <-- si noti il riuso dello spazio libero qui
+^   ^        ^    ^        ^
+v   p        v[2] v[0]     v[1]
+
+10) free(v[2]); v[2] = p;
+
+|===|========|....|========|========|
+^   ^             ^        ^
+v   v[2]          v[0]     v[1]
+
+(le operazioni v[i] = p vengono riportate solo per completezza, ma non sono
+ necessarie ai fini della soluzione)
+
+-------------------------------------------------------------------------------------
+2. Si genera frammentazione durante l’allocazione? Se sì, di che tipo?
+
+Esterna, poiché lo spazio libero esistente al momento dell'operazione 7) non è 
+utilizzabile.
+
+-------------------------------------------------------------------------------------
+3. Quanto è grande l'heap alla fine?
+
+Alla fine l'heap avrà una dimensione di 12+32+16+32+32 = 124 byte.

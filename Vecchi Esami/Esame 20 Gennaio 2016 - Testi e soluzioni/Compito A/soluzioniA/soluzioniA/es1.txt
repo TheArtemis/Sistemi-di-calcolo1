@@ -1,0 +1,29 @@
+-------------------------------------------------------------------------------------
+1. Quanti accessi a memoria vengono effettuati nel ciclo da ciascuna versione?
+
+Entrambe le versioni del programma effettuano 2 milioni di accessi a memoria. Infatti,
+n=1000000 e ad ogni iterazione vengono prelevati da memoria 2 oggetti double.
+
+-------------------------------------------------------------------------------------
+2. Mostrare come calcolare i cache miss generati dalle due versioni della funzione. Che
+numeri si ottengono?
+
+Nella versione 1, possiamo lavorare sulle due linee, quindi ogni 8 iterazioni si hanno 
+2 cache miss e 14 cache hit per cui, per 1000000 di iterazioni, si avranno 250000 cache 
+miss e 1750000 cache hit. Non essendoci vincoli di associatività, ciascuna delle due linee
+potrà ospitare un qualsiasi blocco di 64 byte di memoria allineato a un indirizzo 
+multiplo di 64 byte.
+
+Nella versione 2, sfruttiamo una sola linea di cache ed ogni 4 iterazioni si avranno un 
+cache miss e 7 cache hit quindi, per 1000000 di iterazioni, si avranno 250000 cache miss 
+e 1750000 cache hit.
+
+-------------------------------------------------------------------------------------
+3. Se la cache contenesse una sola linea i risultati cambierebbero? Perché?
+
+Se la cache contenesse una sola linea, nella versione 1 del programma, si avrebbero 2 
+milioni di cache miss (dato che ad ogni iterazione bisogna accedere a due array differenti
+con due località differenti e non possono entrambi essere in cache), mentre nella versione 
+2, anche avendo una sola linea si avrà lo stesso numero di cache miss (250000) e cache hit 
+(1750000). La seconda versione esibisce infatti maggiore località spaziale poiché i double
+sono consecutivi in memoria.

@@ -1,0 +1,76 @@
+-------------------------------------------------------------------------------------
+1.	Descrivere le ottimizzazioni applicate e dire perché si ritiene che siano efficaci.
+
+Inlining della funzione media, definito in altro modulo e pertanto non considerato
+a questo scopo dal compilatore.
+
+-------------------------------------------------------------------------------------
+2.	Riportare il tempo di esecuzione di es4 e di es4-opt usando il comando time.
+
+Compiliamo i programmi con:
+$ gcc -m32 -o es4 es4.c es4-main.c -O1
+$ gcc -m32 -o es4-opt es4-opt.c es4-main.c -O1
+
+time ./es4
+real 0m2.796s
+user 0m2.728s
+sys 0m0.052s
+
+time ./es4-opt
+real 0m0.665s
+user 0m0.618s
+sys 0m0.044s
+
+-------------------------------------------------------------------------------------
+3.	Riportare i flat profile delle due versioni usando gprof.
+
+Compiliamo le versioni auto-profilanti con:
+$ gcc -m32 -o es4-pg es4.c es4-main.c -O1 -pg
+$ gcc -m32 -o es4-opt-pg es4-opt.c es4-main.c -O1 -pg
+
+Eseguiamo e salviamo i profili:
+$ ./es4-pg
+$ gprof es4-pg > es4.txt
+$ ./es4-opt-pg
+$ gprof es4-opt-pg > es4-opt.txt
+
+es4.txt:
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 85.65      2.96     2.96 499999988     0.00     0.00  media
+ 12.46      3.38     0.43        6    71.67   564.17  filtro4
+  1.88      3.45     0.07        1    65.00    65.00  init
+  0.00      3.45     0.00        1     0.00   564.17  testa
+
+es4-opt.txt:
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 90.16      0.55     0.55        6    91.67    91.67  filtro4
+  9.84      0.61     0.06        1    60.00    60.00  init
+  0.00      0.61     0.00        1     0.00    91.67  testa
+
+-------------------------------------------------------------------------------------
+4.	Di quante volte è più veloce l’eseguibile es4-opt rispetto a es4?
+
+2.796/0.665 = 4.2x
+
+-------------------------------------------------------------------------------------
+5.	Usando i dati del profilo es4.txt, calcolare lo speedup che bisognerebbe ottenere 
+per la funzione filtro4 (considerandone il tempo complessivo self+children) per 
+ottenere uno speedup totale per l'intero programma pari a 10x, se questo è possibile. 
+Motivare la risposta.
+
+La funzione filtro4 richiede complessivamente (inclusa quindi la chiamata alla funzione
+media) pari a 85.65 + 12.46 = 98.1%.
+
+Applicando la legge di Amdahl ed uguagliandola a uno speedup 10 si ottiene:
+
+10 = 1/(a/k + 1-a) = 1/(0.98/k + 0.02)
+
+da cui ricaviamo k:
+
+0.98/k + 0.02 = 1/10 = 0.1
+
+0.98/k = 0.1 - 0.02 = 0.08
+
+k = 0.98/0.08 = 12.25x

@@ -1,0 +1,21 @@
+-------------------------------------------------------------------------------------
+1. Quanti accessi a memoria vengono effettuati dalla funzione?
+
+n = 1000000 (per accessi a memoria si intende il sistema di memoria gerarchica nel suo 
+insieme, inclusa cache, DRAM, ecc.)
+
+-------------------------------------------------------------------------------------
+2. Quanti cache miss vengono generati? Illustrare il procedimento usato per il calcolo.
+
+Il programma accede all'array in modo sequenziale inverso, quindi avremo un cache miss 
+ogni volta che dovremo ricaricare in memoria una nuova linea di cache. Essendo una singola 
+linea di cache di 64 byte, e visto che stiamo operando su interi di 4 byte, avremo una 
+cache miss ogni 64/4 = 16 iterazioni, quindi il numero totale di cache miss sarà 
+1000000/16 = 62500.
+
+-------------------------------------------------------------------------------------
+3. La dimensione della linea conta? E quella della cache?
+
+La dimensione della linea conta poiché sta a denominatore nel conto dei cache miss. 
+Poiché l'accesso è sequenziale, i cache miss sono tutti di tipo cold e la dimensione della 
+cache (numero di linee che contiene) non ha alcuna importanza.

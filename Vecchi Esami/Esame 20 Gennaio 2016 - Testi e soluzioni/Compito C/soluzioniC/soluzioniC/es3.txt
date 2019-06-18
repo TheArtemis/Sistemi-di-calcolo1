@@ -1,0 +1,53 @@
+-------------------------------------------------------------------------------------
+1. Il file es3.s riporta il codice x86 generato da gcc 4.8.4 con livello di 
+ottimizzazione 1. Che ottimizzazioni sono state effettuate dal compilatore? Riportare 
+frammenti di codice IA32 a giustificazione delle affermazioni fatte.
+
+* Register allocation
+
+Il compilatore tiene le variabili del programma nei registri evitando di accedere a 
+memoria se non per l'array v.
+
+* Strenght reduction
+
+Il loop più interno è il seguente:
+
+.L3:
+	addl	(%ecx), %eax
+	addl	$1, %edx
+	addl	%esi, %ecx
+	cmpl	%ebx, %edx
+	jne	.L3
+
+Si noti che, diversamente dalla versione C originaria, non appaiono operazioni di prodotto.
+Infatti, l'accesso all'array viene effettuato sommando q (esi) al puntatore che lo scorre
+(l'equivalenza tra questa versione e quella originaria può essere dimostrata per induzione).
+
+-------------------------------------------------------------------------------------
+2. Come vi aspettate che un compilatore ottimizzato traduca l'istruzione a = 4*b+c-19 in 
+codice IA32 in modo da ridurre al minimo il tempo di esecuzione? Assumere che le 
+variabili siano tenute in registri.
+
+Il modo più veloce è quello di usare un'istruzione LEA come segue:
+leal -19(%ecx,%ebx,4), %eax
+
+-------------------------------------------------------------------------------------
+3. Quale versione ci aspettiamo che sia più veloce? Quale tecnica di ottimizzazione è 
+stata applicata per ottenere una versione dall’altra?
+
+La tecnica (nota come loop interchange) consiste nel modificare l'ordine dei loop in 
+modo da esibire maggiore località negli accessi. In particolare, la seconda versione
+(prodotto di matrici) è più efficiente:
+
+for (k=0; k<n; k++) 
+   for (j=0; j<n; j++)
+      for (i=0; i<n; i++)
+         c[i][j] += a[i][k]*b[k][j];
+
+Infatti, fissati k e j il loop più interno che varia j scorre per riga il vettore c 
+(in scrittura) e il vettore b (in lettura). Poiché le scansioni sono sequenziali, il 
+numero di miss è ottimale su tutti i livelli della cache.
+
+La prima versione invece è particolarmente lenta poiché, fissati i e j, il loop più
+interno che varia k scorre il vettore b per colonna e quindi genera un cache miss
+ad ogni iterazione.

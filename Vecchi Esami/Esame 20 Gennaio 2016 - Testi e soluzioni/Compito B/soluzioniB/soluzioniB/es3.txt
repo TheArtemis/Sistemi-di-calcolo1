@@ -1,0 +1,42 @@
+-------------------------------------------------------------------------------------
+1. Supponiamo di avere uno spazio logico a 64 bit suddiviso in pagine di 8 KB. Quanti 
+byte occuperebbe una singola tabella delle pagine che dovesse indicizzare uno spazio 
+fisico di 16 GB? Per motivi di allineamento, assumere che le entry della tabella delle 
+pagine siano di dimensione multipla di 32 bit.
+
+Si ha:
+
+Spazio fisico: 16 GB = 2^34 byte
+Spazio logico 64 bit: la memoria virtuale è di dimensione 2^64 byte
+Dimensione pagine/frame: 8 KB = 2^13 byte
+Numero di frame:  2^34/2^13 = 2^21 frame da 8 KB
+Numero di pagine: 2^64/2^13 = 2^51 pagine da 8 KB
+
+Poichè si hanno 2^21 frame servono 21 bit per rappresentare un numero di frame, quindi 
+almeno 3 byte. Per motivi di allineamento si arrotonda a 32 bit = 4 byte per numero
+di frame contenuto nella tabella delle pagine.
+
+Con 2^51 celle da 4 byte, la tabella delle pagine occuperebbe 2^53 byte = 8 PB (petabyte).
+Per questo motivo, nei sistemi a 64 bit si usano tabelle delle pagine multi-livello.
+
+-------------------------------------------------------------------------------------
+2. Cosa vi aspettate che succeda quando viene eseguita la funzione crack? Perché?
+
+Si ha con tutta probabilità un segmentation fault, poiché l'indirizzo addr_to_crack
+si riferisce allo spazio logico del server, mentre viene usato ingenuamente dall'hacker 
+per accedere allo spazio logico del proprio programmino. I processi hanno spazi logici 
+distinti e un indirizzo logico di un processo non ha alcun significato per un altro.
+
+-------------------------------------------------------------------------------------
+3. Il seguente testo contiene errori: "Per tradurre un indirizzo logico in un indirizzo 
+fisico in un sistema di memoria virtuale con pagine da 8 KB, il MMU utilizza come offset 
+i 10 bit più significativi dell'indirizzo logico e come numero di pagina i rimanenti 22". 
+Correggere gli errori scrivendo il testo corretto.
+
+L'offset utilizza i bit meno significativi mentre le specifica del numero di pagina 
+utilizza i bit più significativi. Poiché 8 KB= 2^13 byte, l'offset utilizzerà 13 bit, 
+mentre il numero di pagina verrà indicato con i rimamenti 19.
+
+Testo corretto: "Per tradurre un indirizzo logico in un indirizzo fisico in un sistema di 
+memoria virtuale con pagine da 8 KB, il MMU utilizza come offset i _13_ bit _meno_ 
+significativi dell'indirizzo logico e come numero di pagina i rimanenti _19_".

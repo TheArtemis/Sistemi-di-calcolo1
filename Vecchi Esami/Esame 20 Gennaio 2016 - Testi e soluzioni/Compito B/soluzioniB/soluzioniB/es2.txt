@@ -1,0 +1,48 @@
+-------------------------------------------------------------------------------------
+1. Come è partizionato l'heap in blocchi liberi/in uso dopo ogni malloc/free?
+
+Un puntatore su una piattaforma a 64 bit occupa 8 byte.
+La struttura ha una dimensione pari a 16 byte (8 char* + 4 int + 4 padding).
+
+Mostriamo ogni operazione con la seguente convenzione grafica:
+= -> 4 byte in uso 
+. -> 4 byte liberi
+
+1) staff** v = malloc(4*sizeof(staff*));  <--- alloca 4*8 = 32 byte
+
+|========|... -> 4 KB |
+^
+v
+
+2) for (i=0; i<4; i++) v[i] = malloc(sizeof(staff));
+
+|========|====|====|====|====|... -> 4 KB |
+^        ^    ^    ^    ^
+v        v[0] v[1] v[2] v[3]
+ 
+3) for (i=0; i<4; i+=2) free(v[i]);
+
+|========|....|====|....|====|... -> 4 KB |
+^             ^         ^
+v             v[1]      v[3]
+
+4) for (i=0; i<4; i+=4) v[i] = malloc(sizeof(staff));
+
+|========|....|====|....|====|... -> 4 KB |
+^        ^    ^         ^
+v        v[0] v[1]      v[3]
+
+
+-------------------------------------------------------------------------------------
+2. Si genera frammentazione durante l’allocazione? Se sì, di che tipo?
+
+Non si genera alcuna frammentazione esterna durante l'allocazione poiché nessuna malloc
+si trova nella situazione di dover espandere l'heap pur avendo una quantità di spazio
+libero complessivo sufficiente per l'allocazione richiesta. Tuttavia, poiché nella struct 
+vi è padding, c'è dello spreco di spazio allocato (frammentazione interna).
+
+-------------------------------------------------------------------------------------
+3. Quanto è grande l'heap alla fine?
+
+Alla fine l'heap avrà una dimensione di 4 KB, la stessa che si aveva all'inizio. La
+massima porzione simultaneamente in uso è di 32+16*4 = 96 byte dopo l'operazione 2).
